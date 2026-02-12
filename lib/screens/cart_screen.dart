@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../widgets/cart_common_widgets'; // Import common assets
+import '../widgets/cart_common_widgets.dart';
+
 import 'instant_tab.dart';
 import 'recurring_tab.dart';
+import 'scheduled_tab.dart';
 
 class CartScreen extends StatefulWidget {
-  const CartScreen({super.key});
+  Map<int, int>? selectedServices;
+  List<Map<String, dynamic>>? serviceList;
+  CartScreen({super.key, this.selectedServices, this.serviceList});
 
   @override
   State<CartScreen> createState() => _CartScreenState();
@@ -14,32 +18,89 @@ class CartScreen extends StatefulWidget {
 class _CartScreenState extends State<CartScreen> {
   int _selectedTab = 0; // 0=Instant, 1=Scheduled, 2=Recurring
 
-  // Dummy Data
-  final List<Map<String, dynamic>> _services = [
-    {'name': 'Utensils', 'price': 49},
-    {'name': 'Sweeping', 'price': 49},
-  ];
-
-  final Map<int, int> _cartItems = {0: 1, 1: 1};
-
   void _updateQuantity(int index, int delta) {
     setState(() {
-      if (_cartItems.containsKey(index)) {
-        int newQty = _cartItems[index]! + delta;
-        if (newQty > 0) _cartItems[index] = newQty;
-        else _cartItems.remove(index);
+      if (widget.selectedServices!.containsKey(index)) {
+        int newQty = widget.selectedServices![index]! + delta;
+        if (newQty > 0) {
+          widget.selectedServices![index] = newQty;
+        } else {
+          widget.selectedServices!.remove(index);
+        }
       } else if (delta > 0) {
-        _cartItems[index] = 1;
+        widget.selectedServices![index] = 1;
       }
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    // Guard against null or empty data
+    if (widget.selectedServices == null ||
+        widget.serviceList == null ||
+        widget.selectedServices!.isEmpty) {
+      return Scaffold(
+        backgroundColor: kPrimaryColor,
+        body: SafeArea(
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+                child: Row(
+                  children: [
+                    GestureDetector(
+                      onTap: () => Navigator.pop(context),
+                      child: const Icon(
+                        Icons.arrow_back,
+                        color: Colors.white,
+                        size: 24,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Text(
+                      'My Cart',
+                      style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: Container(
+                  width: double.infinity,
+                  decoration: const BoxDecoration(
+                    color: kBackgroundColor,
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(24),
+                      topRight: Radius.circular(24),
+                    ),
+                  ),
+                  child: Center(
+                    child: Text(
+                      'Your cart is empty',
+                      style: GoogleFonts.inter(fontSize: 16, color: kTextGrey),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     // Totals logic
     double subtotal = 0;
-    _cartItems.forEach((k, v) => subtotal += (_services[k]['price'] as int) * v);
-    double total = subtotal + (subtotal * 0.18);
+    widget.selectedServices!.forEach((k, v) {
+      if (k < widget.serviceList!.length) {
+        subtotal += (widget.serviceList![k]['price'] as int) * v;
+      }
+    });
+    double gst = subtotal * 0.18;
+    double total = subtotal + gst;
 
     return Scaffold(
       backgroundColor: kPrimaryColor,
@@ -54,10 +115,21 @@ class _CartScreenState extends State<CartScreen> {
                 children: [
                   GestureDetector(
                     onTap: () => Navigator.pop(context),
-                    child: const Icon(Icons.arrow_back, color: Colors.white, size: 24),
+                    child: const Icon(
+                      Icons.arrow_back,
+                      color: Colors.white,
+                      size: 24,
+                    ),
                   ),
                   const SizedBox(width: 16),
-                  Text('My Cart', style: GoogleFonts.inter(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w700)),
+                  Text(
+                    'My Cart',
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -68,7 +140,10 @@ class _CartScreenState extends State<CartScreen> {
                 width: double.infinity,
                 decoration: const BoxDecoration(
                   color: kBackgroundColor,
-                  borderRadius: BorderRadius.only(topLeft: Radius.circular(24), topRight: Radius.circular(24)),
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(24),
+                    topRight: Radius.circular(24),
+                  ),
                 ),
                 child: Column(
                   children: [
@@ -80,7 +155,12 @@ class _CartScreenState extends State<CartScreen> {
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(30),
-                        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10)],
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.05),
+                            blurRadius: 10,
+                          ),
+                        ],
                       ),
                       child: Row(
                         children: [
@@ -97,10 +177,24 @@ class _CartScreenState extends State<CartScreen> {
                       child: IndexedStack(
                         index: _selectedTab,
                         children: [
-                          InstantTab(items: _cartItems, services: _services, onChangeQty: _updateQuantity),
-                          // Reuse InstantTab for Scheduled as UI is same
-                          InstantTab(items: _cartItems, services: _services, onChangeQty: _updateQuantity),
-                          RecurringTab(items: _cartItems, services: _services, onChangeQty: _updateQuantity),
+                          InstantTab(
+                            items: widget.selectedServices!,
+                            services: widget.serviceList!,
+                            onChangeQty: _updateQuantity,
+                          ),
+                          ScheduledTab(
+                            items: widget.selectedServices!,
+                            services: widget.serviceList!,
+                            onChangeQty: _updateQuantity,
+                            subtotal: subtotal,
+                            gst: gst,
+                            total: total,
+                          ),
+                          RecurringTab(
+                            items: widget.selectedServices!,
+                            services: widget.serviceList!,
+                            onChangeQty: _updateQuantity,
+                          ),
                         ],
                       ),
                     ),
@@ -111,33 +205,84 @@ class _CartScreenState extends State<CartScreen> {
           ],
         ),
       ),
-      
+
       // --- BOTTOM ACTION BAR ---
       bottomNavigationBar: Container(
         color: Colors.white,
         padding: const EdgeInsets.all(16),
         child: SafeArea(
           child: ElevatedButton(
-            onPressed: () {},
+            onPressed: () {
+              if (_selectedTab == 1) {
+                _showTimeSlotBottomSheet(context);
+              }
+            },
             style: ElevatedButton.styleFrom(
               backgroundColor: kPrimaryColor,
               padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
               elevation: 0,
             ),
             child: _selectedTab == 2
-              ? Text('Select frequency & time slot', style: GoogleFonts.inter(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16))
-              : Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text('Pay now', style: GoogleFonts.inter(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
-                    const VerticalDivider(color: Colors.white24, width: 32, thickness: 1, indent: 4, endIndent: 4),
-                    Text('₹${total.toStringAsFixed(2)}', style: GoogleFonts.inter(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
-                  ],
-                ),
+                ? Text(
+                    'Select frequency & time slot',
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  )
+                : _selectedTab == 1
+                ? Text(
+                    'Select time slot',
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  )
+                : Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Pay now',
+                        style: GoogleFonts.inter(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                      Container(
+                        height: 24,
+                        width: 1,
+                        color: Colors.white24,
+                        margin: const EdgeInsets.symmetric(horizontal: 16),
+                      ),
+                      Text(
+                        '₹${total.toStringAsFixed(2)}',
+                        style: GoogleFonts.inter(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ],
+                  ),
           ),
         ),
       ),
+    );
+  }
+
+  void _showTimeSlotBottomSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      barrierColor: Colors.black.withOpacity(0.5),
+      builder: (context) => const TimeSlotBottomSheet(),
     );
   }
 
@@ -146,20 +291,24 @@ class _CartScreenState extends State<CartScreen> {
     return Expanded(
       child: GestureDetector(
         onTap: () => setState(() => _selectedTab = index),
-        child: Container(
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
           padding: const EdgeInsets.symmetric(vertical: 10),
           decoration: BoxDecoration(
             color: isSelected ? kPrimaryColor : Colors.transparent,
             borderRadius: BorderRadius.circular(24),
           ),
           alignment: Alignment.center,
-          child: Text(
-            text,
+          child: AnimatedDefaultTextStyle(
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
             style: GoogleFonts.inter(
               color: isSelected ? Colors.white : Colors.black87,
               fontWeight: FontWeight.w600,
               fontSize: 13,
             ),
+            child: Text(text),
           ),
         ),
       ),

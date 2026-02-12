@@ -192,7 +192,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
             ),
           ),
           // Floating review bar (shows when there are selected services)
-          if (widget.selectedServices.isNotEmpty)
+          if (widget.selectedServices != null && widget.selectedServices!.isNotEmpty)
             Positioned(
               bottom: 0,
               left: 0,

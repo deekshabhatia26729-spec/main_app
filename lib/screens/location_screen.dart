@@ -48,7 +48,7 @@ class LocationScreen extends StatelessWidget {
               Expanded(
                 child: Center(
                   child: Image.asset(
-                    'assets/images/city_illustration.png', // Replace with your city image asset
+                    'assets/images/image.png', // Replace with your city image asset
                     width: size.width * 0.9,
                     fit: BoxFit.contain,
                     errorBuilder: (context, error, stackTrace) {

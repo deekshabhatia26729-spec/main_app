@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../widgets/cart_common_widgets';
-
+import 'package:maid_app/widgets/cart_common_widgets.dart';
 
 class ScheduledTab extends StatelessWidget {
   final Map<int, int> items;
@@ -33,8 +32,17 @@ class ScheduledTab extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Review booking', style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.bold)),
-              Text('$totalServices services', style: GoogleFonts.inter(color: Colors.grey[600], fontSize: 14)),
+              Text(
+                'Review booking',
+                style: GoogleFonts.inter(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              Text(
+                '$totalServices services',
+                style: GoogleFonts.inter(color: Colors.grey[600], fontSize: 14),
+              ),
             ],
           ),
           const SizedBox(height: 16),
@@ -44,29 +52,35 @@ class ScheduledTab extends StatelessWidget {
             final service = services[key];
             return ServiceItemCard(
               name: service['name'],
-              price: (service['price'] as num).toDouble(),
+              price: (service['price'] as num).toInt(),
               quantity: qty,
               onAdd: () => onChangeQty(key, 1),
               onRemove: () => onChangeQty(key, -1),
             );
           }).toList(),
 
+          const SizedBox(height: 8),
           GestureDetector(
             onTap: () {},
             child: Text(
               'Missed something? Add more services',
-              style: GoogleFonts.inter(color: kPrimaryColor, fontWeight: FontWeight.w500),
+              style: GoogleFonts.inter(
+                color: kPrimaryColor,
+                fontWeight: FontWeight.w500,
+                fontSize: 14,
+              ),
             ),
           ),
 
-          const CouponsCard(),
-          const BookingDetailsCard(),
-          const SizedBox(height: 20),
-          
-          Text('Bill Details', style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 10),
+          const SizedBox(height: 16),
+          const CouponCard(),
+
+          const SizedBox(height: 16),
+          const AddressDetailsCard(),
+
+          const SizedBox(height: 16),
           BillDetailsCard(subtotal: subtotal, gst: gst, total: total),
-           
+
           const SizedBox(height: 100),
         ],
       ),

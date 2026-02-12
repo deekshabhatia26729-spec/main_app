@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../widgets/cart_common_widgets'; // Import common assets
+import 'package:maid_app/widgets/cart_common_widgets.dart';
 
 
 class InstantTab extends StatelessWidget {

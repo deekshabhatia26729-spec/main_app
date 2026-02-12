@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:maid_app/screens/bottom_navigationbar.dart';
-// import 'screens/onboarding_screen.dart';
+import 'package:maid_app/screens/onboarding_screen.dart';
+import 'screens/onboarding_screen.dart';
+import 'screens/home_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -23,7 +25,8 @@ class MyApp extends StatelessWidget {
         ),
         useMaterial3: true,
       ),
-      home: MainScreen(),
+      home:HomeScreen(),// OnboardingScreen(),
+      // home: HomeScreen(),
     );
   }
 }
